@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
+import authRoutes from "./routes/authRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,6 +24,7 @@ mongoose
 app.get("/", (req, res) => {
   res.send("log my first response!");
 });
+app.use("/api/auth", authRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
