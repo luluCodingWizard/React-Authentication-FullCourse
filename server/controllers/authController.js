@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import User from "../models/User";
+import User from "../models/User.js";
 
 const registerUser = async (req, res) => {
   const { name, email, password, info, isVerified } = req.body;
@@ -9,9 +9,7 @@ const registerUser = async (req, res) => {
   try {
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return responsiveFontSizes
-        .status(400)
-        .json({ message: "User already exists" });
+      return res.status(400).json({ message: "User already exists" });
     }
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
