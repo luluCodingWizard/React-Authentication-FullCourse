@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useToken } from "../hooks/useToken.js";
 
 const Signup = () => {
   // State to hold form input values
@@ -9,6 +10,8 @@ const Signup = () => {
     confirmPassword: "",
   });
 
+  const { setToken } = useToken(); // Access the setToken function from the hook
+
   // Function to handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -16,13 +19,40 @@ const Signup = () => {
   };
 
   // Function to handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
       return; // Stop the form submission
     }
-    console.log("Form Data Submitted:", formData);
+    try {
+      // Send sign-up data to the server
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(errorData.message || "Failed to sign up.");
+      }
+
+      const { token } = await response.json();
+      // Save the token using the hook
+      setToken(token);
+      alert("Sign-up successful!"); // Optional: Provide feedback to the user
+      // Redirect the user to another page if needed, e.g., homepage or dashboard
+      // window.location.href = "/dashboard";
+    } catch (error) {
+      console.error("Error during sign-up:", error.message);
+      alert(error.message); // Display error message to the user
+    }
   };
 
   return (
