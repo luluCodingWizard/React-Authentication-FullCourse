@@ -3,10 +3,7 @@ import { useToken } from "./useToken.js";
 
 export const useUser = () => {
   const { token } = useToken();
-  const [user, setUser] = useState(() => {
-    if (!token) return null;
-    return getPayloadFromToken(token); // Decode token on load
-  });
+  const [user, setUser] = useState(null);
 
   // Function to decode the JWT
   const getPayloadFromToken = (token) => {
@@ -22,5 +19,6 @@ export const useUser = () => {
       setUser(getPayloadFromToken(token)); // Decode token to user
     }
   }, [token]); // Runs whenever token changes
+
   return { user };
 };
