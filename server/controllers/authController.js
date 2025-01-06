@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
 const registerUser = async (req, res) => {
@@ -23,7 +24,16 @@ const registerUser = async (req, res) => {
     });
 
     await newUser.save();
-    res.status(201).json({ message: "User created!" });
+    // generate the JWT
+    const token = jwt.sign(
+      {
+        id: newUser._id,
+        name: newUser.name,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    res.status(201).json({ message: "User created!", token });
   } catch (error) {
     console.error("Error registration:", error);
     res.status(500).json({ message: "Server Error" });
