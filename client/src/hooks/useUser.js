@@ -1,3 +1,4 @@
+// hooks/useUser.js
 import { useState, useEffect } from "react";
 import { useToken } from "./useToken.js";
 
@@ -5,20 +6,28 @@ export const useUser = () => {
   const { token } = useToken();
   const [user, setUser] = useState(null);
 
-  // Function to decode the JWT
+  // Decode the JWT payload
   const getPayloadFromToken = (token) => {
-    const encodedPayload = token.split(".")[1]; // Get the middle part
-    return JSON.parse(atob(encodedPayload)); // Decode and parse JSON
+    if (!token) return null; // Handle null token
+    try {
+      const encodedPayload = token.split(".")[1]; // Middle part of the JWT
+      return JSON.parse(atob(encodedPayload));
+    } catch (error) {
+      console.error("Invalid token:", error);
+      return null; // Handle invalid token
+    }
   };
 
-  // Update user whenever the token changes
+  // Update the user whenever the token changes
   useEffect(() => {
+    console.log("useEffect.....");
+    console.log(token);
     if (!token) {
-      setUser(null); // No token, no user
+      setUser(null); // No token, clear user
     } else {
-      setUser(getPayloadFromToken(token)); // Decode token to user
+      setUser(getPayloadFromToken(token)); // Decode and set user
     }
-  }, [token]); // Runs whenever token changes
+  }, [token]); // Triggered when `token` changes
 
   return { user };
 };
