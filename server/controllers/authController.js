@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { blacklistToken } from "../config/redisClient.js";
 
 const registerUser = async (req, res) => {
   const { name, email, password, info, isVerified } = req.body;
@@ -85,4 +86,19 @@ const loginUser = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser };
+const logoutUser = (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1]; // Extract JWT from Authorization header
+  if (!token) {
+    return res.status(400).json({ message: "No token provided!" });
+  }
+
+  // Decode the token to get its expiration time
+  const { exp } = jwt.decode(token);
+  const expiresIn = exp - Math.floor(Date.now() / 1000);
+
+  // blacklist teh token
+  blacklistToken(token, expiresIn);
+  res.status(200).json({ message: "Successfully logged out!" });
+};
+
+export { registerUser, loginUser, logoutUser };
