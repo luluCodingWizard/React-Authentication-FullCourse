@@ -1,11 +1,9 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom"; // For redirecting the user
-import { useToken } from "../hooks/useToken.js";
-import { useUser } from "../hooks/useUser.js";
+import { AuthContext } from "../context/AuthContext";
 
 const Login = () => {
-  const { setToken } = useToken(); // Get the function to set the token
-  const { user } = useUser(); // Get the user info from the token
+  const { setToken } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -46,7 +44,7 @@ const Login = () => {
       // Parse the JSON response
       const data = await response.json();
 
-      // Store the JWT securely using the useToken hook
+      // Store the JWT securely using the auth context
       setToken(data.token);
       // Redirect to the dashboard or protected page
       navigate("/dashboard");

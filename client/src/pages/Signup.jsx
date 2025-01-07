@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useToken } from "../hooks/useToken.js";
+import React, { useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 const Signup = () => {
   // State to hold form input values
@@ -9,8 +9,7 @@ const Signup = () => {
     password: "",
     confirmPassword: "",
   });
-
-  const { setToken } = useToken(); // Access the setToken function from the hook
+  const { setToken } = useContext(AuthContext);
 
   // Function to handle input changes
   const handleChange = (e) => {
