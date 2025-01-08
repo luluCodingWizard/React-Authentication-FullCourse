@@ -7,6 +7,8 @@ import Navigation from "./components/Navigation";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import ProtectedRoute from "./components/ProtectedRoutes.jsx";
 import ProfilePage from "./pages/Profile.jsx";
+import AdminPanel from "./pages/AdminPanel.jsx";
+import Unauthorized from "./pages/Unauthorized.jsx";
 
 function App() {
   return (
@@ -18,11 +20,20 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/sign-up" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
           <Route
             path="/profile"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRoles={["user", "admin"]}>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requiredRoles={["admin"]}>
+                <AdminPanel />
               </ProtectedRoute>
             }
           />

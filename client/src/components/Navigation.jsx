@@ -15,12 +15,19 @@ const Navigation = () => {
         {user ? (
           <>
             <span>Welcome, {user.name || "User"}!</span>
-            <Link
-              to="/profile"
-              className="px-4 py-2 bg-green-500 rounded hover:bg-green-600"
-            >
-              Profile
-            </Link>
+            {user.role !== "moderator" && (
+              <Link
+                to="/profile"
+                className="px-4 py-2 bg-green-500 rounded hover:bg-green-600"
+              >
+                Profile
+              </Link>
+            )}
+            {user.role === "admin" && (
+              <Link to="/admin" className="hover:underline">
+                Admin Panel
+              </Link>
+            )}
             <button
               onClick={logout}
               className="px-4 py-2 bg-red-500 rounded hover:bg-red-600"
