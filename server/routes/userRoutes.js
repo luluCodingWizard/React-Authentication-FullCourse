@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyToken } from "../middlewares/authMiddleware.js";
+import verifyToken from "../middlewares/authMiddleware.js";
 import {
   getUserDetails,
   updateUserDetails,
@@ -9,3 +9,5 @@ const router = express.Router();
 
 router.get("/me", verifyToken, getUserDetails);
 router.put("/me", verifyToken, updateUserDetails);
+
+export default router;
