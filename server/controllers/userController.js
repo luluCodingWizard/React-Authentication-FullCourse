@@ -40,3 +40,18 @@ export const updateUserDetails = async (req, res) => {
     res.status(500).json({ message: "Error updating user details." });
   }
 };
+
+export const updateUserRole = async (req, res) => {
+  try {
+    const { userId, role } = req.body;
+
+    if (!["user", "admin", "moderator"].includes(role)) {
+      return res.status(400).json({ message: "Invalid role specified" });
+    }
+
+    const user = await User.findByIdAndUpdate(userId, { role }, { new: true });
+    res.status(200).json({ message: "User role updated successfully", user });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update user role", error });
+  }
+};

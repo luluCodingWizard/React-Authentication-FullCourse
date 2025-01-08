@@ -5,6 +5,8 @@ import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import verifyToken from "./middlewares/authMiddleware.js";
+import { checkRole } from "./middlewares/checkRole.js";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,7 +25,7 @@ mongoose
   .catch((err) => console.error("Error connecting to MongoDB", err));
 
 // Routes
-app.get("/", (req, res) => {
+app.get("/", verifyToken, checkRole(["admin"]), (req, res) => {
   res.send("log my first response!");
 });
 app.use("/api/auth", authRoutes);

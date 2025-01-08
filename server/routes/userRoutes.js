@@ -1,5 +1,6 @@
 import express from "express";
 import verifyToken from "../middlewares/authMiddleware.js";
+import { checkRole } from "../middlewares/checkRole.js";
 import {
   getUserDetails,
   updateUserDetails,
@@ -7,7 +8,8 @@ import {
 
 const router = express.Router();
 
-router.get("/me", verifyToken, getUserDetails);
-router.put("/me", verifyToken, updateUserDetails);
+router.get("/me", verifyToken, checkRole(["user", "admin"]), getUserDetails);
+router.put("/me", verifyToken, checkRole(["user", "admin"]), updateUserDetails);
+router.post("/updaterole", verifyToken, updateUserDetails);
 
 export default router;
