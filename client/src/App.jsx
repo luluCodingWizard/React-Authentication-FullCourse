@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoutes.jsx";
 import ProfilePage from "./pages/Profile.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
 import Unauthorized from "./pages/Unauthorized.jsx";
+import EmailVerification from "./pages/EmailVerification.jsx";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/verify-email/:token" element={<EmailVerification />} />
           <Route path="/sign-up" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/unauthorized" element={<Unauthorized />} />

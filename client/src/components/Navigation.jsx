@@ -36,12 +36,17 @@ const Navigation = () => {
             </button>
           </>
         ) : (
-          <a
-            href="/login"
-            className="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600"
-          >
-            Login
-          </a>
+          <>
+            <a
+              href="/login"
+              className="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600"
+            >
+              Login
+            </a>
+            <Link to="/sign-up" className="hover:underline">
+              Sign up
+            </Link>
+          </>
         )}
       </div>
     </nav>

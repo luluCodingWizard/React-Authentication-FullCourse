@@ -11,7 +11,7 @@ const router = express.Router();
 
 // POST route for user registration
 router.post("/register", registerUser);
-router.get("/verify-email", verifyController);
+router.get("/verify-email/:token", verifyController);
 router.post("/login", validateLogin, loginUser);
 router.post("/logout", logoutUser);
 

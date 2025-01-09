@@ -115,22 +115,30 @@ const logoutUser = (req, res) => {
 };
 
 const verifyController = async (req, res) => {
-  const { token } = req.query;
+  const { token } = req.params;
+
   try {
     // Decode token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     // Find user by ID and ensure token matches
-    const user = await User.findById(decoded.userId);
-    if (!user || user.verificationToken !== token) {
-      return res.status(400).json({ message: "Invalid or expired token." });
-    }
+    const user = await User.findById(decoded.id).select(
+      "+verificationToken +verificationTokenExpiry"
+    );
+    if (user.isVerified) {
+      res.status(200).json({ message: "Email already verified successfully!" });
+    } else {
+      console.log(user);
+      if (!user || user.verificationToken !== token) {
+        return res.status(400).json({ message: "Invalid or expired token." });
+      }
 
-    // Verify the user
-    user.isVerified = true;
-    user.verificationToken = undefined; // Clear the token
-    user.verificationTokenExpiry = undefined; // Clear expiry
-    await user.save();
-    res.status(200).json({ message: "Email verified successfully!" });
+      // Verify the user
+      user.isVerified = true;
+      user.verificationToken = undefined; // Clear the token
+      user.verificationTokenExpiry = undefined; // Clear expiry
+      await user.save();
+      res.status(200).json({ message: "Email verified successfully!" });
+    }
   } catch (error) {
     console.error("Email verification error:", error);
     res.status(400).json({ message: "Verification failed." });

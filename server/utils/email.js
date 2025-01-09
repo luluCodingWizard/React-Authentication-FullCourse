@@ -9,7 +9,7 @@ export const sendVerificationEmail = async (email, token) => {
     },
   });
 
-  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${token}`;
 
   const mailOptions = {
     from: "no-reply@yourapp.com",
