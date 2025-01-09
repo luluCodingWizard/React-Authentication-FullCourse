@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { sendVerificationEmail } from "../utils/email.js";
 import User from "../models/User.js";
 import { blacklistToken } from "../config/redisClient.js";
 
@@ -24,7 +25,6 @@ const registerUser = async (req, res) => {
       isVerified,
     });
 
-    await newUser.save();
     // generate the JWT
     const token = jwt.sign(
       {
@@ -34,7 +34,18 @@ const registerUser = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
-    res.status(201).json({ message: "User created!", token });
+
+    newUser.verificationToken = token;
+    newUser.verificationTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
+
+    await newUser.save();
+    // Send verification email
+    await sendVerificationEmail(newUser.email, token);
+
+    res.status(201).json({
+      message: "User created check your Email for the verification!",
+      token,
+    });
   } catch (error) {
     console.error("Error registration:", error);
     res.status(500).json({ message: "Server Error" });
@@ -103,4 +114,27 @@ const logoutUser = (req, res) => {
   res.status(200).json({ message: "Successfully logged out!" });
 };
 
-export { registerUser, loginUser, logoutUser };
+const verifyController = async (req, res) => {
+  const { token } = req.query;
+  try {
+    // Decode token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Find user by ID and ensure token matches
+    const user = await User.findById(decoded.userId);
+    if (!user || user.verificationToken !== token) {
+      return res.status(400).json({ message: "Invalid or expired token." });
+    }
+
+    // Verify the user
+    user.isVerified = true;
+    user.verificationToken = undefined; // Clear the token
+    user.verificationTokenExpiry = undefined; // Clear expiry
+    await user.save();
+    res.status(200).json({ message: "Email verified successfully!" });
+  } catch (error) {
+    console.error("Email verification error:", error);
+    res.status(400).json({ message: "Verification failed." });
+  }
+};
+
+export { registerUser, loginUser, logoutUser, verifyController };

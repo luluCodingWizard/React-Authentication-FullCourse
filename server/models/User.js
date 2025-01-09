@@ -19,7 +19,8 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: false,
   },
-
+  verificationToken: { type: String },
+  verificationTokenExpiry: { type: Date },
   role: {
     type: String,
     enum: ["user", "admin", "moderator"],
