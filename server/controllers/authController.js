@@ -145,4 +145,38 @@ const verifyController = async (req, res) => {
   }
 };
 
+// Forgot Password Controller
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // 1. Check if the user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(200).json({
+        message: "If your email exists, you will receive a reset link shortly.",
+      });
+    }
+
+    // 2. Generate a secure token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenExpiry = Date.now() + 3600000; // Token expires in 1 hour
+
+    // 3. Save the token and expiry to the user record
+    user.passwordResetToken = resetToken;
+    user.passwordResetTokenExpiry = resetTokenExpiry;
+    await user.save();
+
+    // 4. Send the reset email
+    await sendResetPasswordEmail(user.email, resetToken);
+
+    return res.status(200).json({
+      message: "Reset link sent to your email address.",
+    });
+  } catch (error) {
+    console.error("Error in forgotPassword controller:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+};
+
 export { registerUser, loginUser, logoutUser, verifyController };
