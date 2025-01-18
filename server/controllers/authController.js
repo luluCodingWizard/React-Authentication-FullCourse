@@ -68,24 +68,15 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid password!" });
     }
 
-    // generate JWT
-
-    const token = jwt.sign(
-      {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    // Generate tokens
+    const { accessToken, refreshToken } = generateTokens(user);
 
     // send success response with token
 
     res.status(200).json({
       message: "login success!",
-      token,
+      token: accessToken,
+      refreshToken,
       user: {
         id: user._id,
         email: user.email,
@@ -98,20 +89,84 @@ const loginUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 };
+// to generate tokens
+const generateTokens = (user) => {
+  const accessToken = jwt.sign(
+    { id: user._id, name: user.name, email: user.email, role: user.role },
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: "2m" } // Access token expires in 15 minutes
+  );
 
-const logoutUser = (req, res) => {
+  const refreshToken = jwt.sign(
+    { id: user._id },
+    process.env.REFRESH_TOKEN_SECRET,
+    { expiresIn: "7d" } // Refresh token expires in 7 days
+  );
+
+  return { accessToken, refreshToken };
+};
+// Refresh Token Endpoint
+export const refreshToken = async (req, res) => {
+  const { token } = req.body;
+
+  if (!token) return res.status(401).json({ message: "No token provided" });
+
+  try {
+    const existingUser = await User.findOne({ refreshToken: token });
+    if (!existingUser)
+      return res.status(403).json({ message: "Invalid token" });
+
+    // Verify the refresh token
+    jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
+      if (err)
+        return res.status(403).json({ message: "Token expired or invalid" });
+
+      // Generate a new access token
+      const accessToken = jwt.sign(
+        {
+          id: decoded.id,
+          email: existingUser.email,
+          name: existingUser.name,
+          role: existingUser.role || "user",
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "2m" }
+      );
+
+      res.status(200).json({ token: accessToken });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+const logoutUser = async (req, res) => {
+  const { userId } = req.body;
   const token = req.headers.authorization?.split(" ")[1]; // Extract JWT from Authorization header
   if (!token) {
     return res.status(400).json({ message: "No token provided!" });
   }
 
-  // Decode the token to get its expiration time
-  const { exp } = jwt.decode(token);
-  const expiresIn = exp - Math.floor(Date.now() / 1000);
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-  // blacklist teh token
-  blacklistToken(token, expiresIn);
-  res.status(200).json({ message: "Successfully logged out!" });
+    user.refreshToken = null; // Clear the refresh token
+    await user.save();
+
+    // Decode the token to get its expiration time
+    const { exp } = jwt.decode(token);
+    const expiresIn = exp - Math.floor(Date.now() / 1000);
+
+    // blacklist teh token
+    blacklistToken(token, expiresIn);
+
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
 };
 
 const verifyController = async (req, res) => {
