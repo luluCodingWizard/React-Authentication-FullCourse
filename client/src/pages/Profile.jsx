@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-
-const ProfilePage = () => {
+import { fetchWithAuth } from "../utils/fetchWithAuth";
+const ProfilePage = ({ onLogoutWarning }) => {
   const [user, setUser] = useState({
     name: "",
     email: "",
@@ -16,14 +16,13 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:5000/api/user/me", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+        const response = await fetchWithAuth(
+          "http://localhost:5000/api/user/me",
+          {
+            method: "GET",
           },
-        });
+          OnLogoutWarning
+        );
 
         // Check if the response is successful
         if (!response.ok) {
@@ -41,7 +40,7 @@ const ProfilePage = () => {
       }
     };
     fetchUserDetails();
-  }, []);
+  }, [OnLogoutWarning]);
 
   // Handle form input changes
   const handleChange = (e) => {

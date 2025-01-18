@@ -1,6 +1,6 @@
 // context/AuthContext.js
 import React, { createContext, useState, useEffect } from "react";
-
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -10,8 +10,9 @@ export const AuthProvider = ({ children }) => {
   });
   const [user, setUser] = useState(null);
   // step 2:  function that updates the token in my state and local storage
-  const setToken = (newToken) => {
+  const setToken = (newToken, refreshToken) => {
     localStorage.setItem("token", newToken);
+    localStorage.setItem("refreshToken", refreshToken);
     setTokenInternal(newToken);
   };
 
@@ -45,12 +46,12 @@ export const AuthProvider = ({ children }) => {
   // Handle logout
   const logout = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/auth/logout", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetchWithAuth(
+        "http://localhost:5000/api/auth/logout",
+        {
+          method: "POST",
+        }
+      );
 
       if (response.ok) {
         clearToken(); // Clear token and user on logout

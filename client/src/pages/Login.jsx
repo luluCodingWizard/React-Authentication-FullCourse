@@ -45,7 +45,7 @@ const Login = () => {
       const data = await response.json();
 
       // Store the JWT securely using the auth context
-      setToken(data.token);
+      setToken(data.token, data.refreshToken);
       // Redirect to the dashboard or protected page
       navigate("/dashboard");
     } catch (error) {
