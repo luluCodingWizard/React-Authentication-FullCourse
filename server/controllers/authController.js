@@ -145,24 +145,43 @@ const logoutUser = async (req, res) => {
   }
 
   try {
-    // Decode the token to get userId (JWT contains userId)
-    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Replace with your actual secret key
+    if (token) {
+      // Decode the token to get userId (JWT contains userId)
+      const decoded = jwt.verify(token, process.env.JWT_SECRET); // Replace with your actual secret key
 
-    const userId = decoded.id; // Assuming 'id' is in the token payload
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+      const userId = decoded.id; // Assuming 'id' is in the token payload
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
 
-    user.refreshToken = null; // Clear the refresh token
-    await user.save();
+      user.refreshToken = null; // Clear the refresh token
+      await user.save();
 
-    // Decode the token to get its expiration time
-    const { exp } = jwt.decode(token);
-    const expiresIn = exp - Math.floor(Date.now() / 1000);
+      // Decode the token to get its expiration time
+      const { exp } = jwt.decode(token);
+      const expiresIn = exp - Math.floor(Date.now() / 1000);
 
-    // blacklist teh token
-    blacklistToken(token, expiresIn);
+      // blacklist teh token
+      blacklistToken(token, expiresIn);
 
-    res.status(200).json({ message: "Logout successful" });
+      res.status(200).json({ message: "Logout successful" });
+    }
+    // Handle Google OAuth session logout
+    if (req.user) {
+      req.logout((err) => {
+        if (err) {
+          console.error("Error during Google OAuth logout:", err);
+          return res
+            .status(500)
+            .json({ message: "Failed to log out with Google OAuth" });
+        }
+
+        return res
+          .status(200)
+          .json({ message: "Google OAuth session logout successful" });
+      });
+    } else {
+      return res.status(400).json({ message: "No token or session provided!" });
+    }
   } catch (error) {
     if (error.name === "TokenExpiredError") {
       // If the token has expired, handle it here

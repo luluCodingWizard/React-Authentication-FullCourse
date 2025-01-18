@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import session from "express-session";
+import passport from "passport";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
@@ -7,6 +9,7 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import verifyToken from "./middlewares/authMiddleware.js";
 import { checkRole } from "./middlewares/checkRole.js";
+import "./config/passport";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,7 +17,15 @@ const PORT = process.env.PORT || 5000;
 // Use CORS middleware
 app.use(cors());
 app.use(bodyParser.json());
-
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 // connect to mongoDB
 mongoose
   .connect("mongodb://127.0.0.1:27017/userInfo", {
