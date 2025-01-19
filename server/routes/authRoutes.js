@@ -63,10 +63,21 @@ router.get(
     // Generate JWT for access and refresh
 
     const { accessToken, refreshToken } = await generateTokens(user);
+    // Set tokens as cookies
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true, // Secure from XSS
+      secure: process.env.NODE_ENV === "production", // Send only over HTTPS in production
+      sameSite: "strict", // Prevent CSRF
+      maxAge: 15 * 60 * 1000, // Expires in 15 minutes
+    });
 
-    res.redirect(
-      `http://localhost:5173/dashboard?token=${accessToken}&refreshToken=${refreshToken}`
-    ); // Or wherever you want the user to go
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // Expires in 7 days
+    });
+    res.redirect(`http://localhost:5173/dashboard`); // Or wherever you want the user to go
   }
 );
 

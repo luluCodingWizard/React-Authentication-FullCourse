@@ -1,9 +1,7 @@
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";
 
 const verifyToken = async (req, res, next) => {
-  // Get the token from the Authorization header
-  const token = req.headers.authorization?.split(" ")[1]; // "Bearer <token>"
+  const token = req.cookies.accessToken; // Extract token from cookies
   if (!token) {
     return res
       .status(403)

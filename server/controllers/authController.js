@@ -73,17 +73,42 @@ const loginUser = async (req, res) => {
 
     // send success response with token
 
-    res.status(200).json({
-      message: "login success!",
-      token: accessToken,
-      refreshToken,
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        role: user.role || "user",
-      },
-    });
+    // res.status(200).json({
+    //   message: "login success!",
+    //   token: accessToken,
+    //   refreshToken,
+    //   user: {
+    //     id: user._id,
+    //     email: user.email,
+    //     name: user.name,
+    //     role: user.role || "user",
+    //   },
+    // });
+
+    // Set cookies
+    res
+      .cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 10 * 10000, // 10 seconds (same as token expiry)
+      })
+      .cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      })
+      .status(200)
+      .json({
+        message: "Login successful!",
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          role: user.role || "user",
+        },
+      });
   } catch (error) {
     console.error("Error during login:", error.message);
     res.status(500).json({ message: "Internal server error." });
@@ -109,7 +134,7 @@ export const generateTokens = async (user) => {
 };
 // Refresh Token Endpoint
 export const refreshToken = async (req, res) => {
-  const { token } = req.body;
+  const token = req.cookies.refreshToken; // Extract refreshToken from cookies
 
   if (!token) return res.status(401).json({ message: "No token provided" });
 
@@ -129,7 +154,16 @@ export const refreshToken = async (req, res) => {
         // Generate new access token
         const { accessToken } = await generateTokens(existingUser);
 
-        res.status(200).json({ token: accessToken });
+        // Send the new access token as an HTTP-only cookie
+        res
+          .cookie("accessToken", accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 10 * 10000, // 10 seconds
+          })
+          .status(200)
+          .json({ message: "Token refreshed successfully" });
       }
     );
   } catch (error) {
@@ -139,7 +173,7 @@ export const refreshToken = async (req, res) => {
 };
 
 const logoutUser = async (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1]; // Extract JWT from Authorization header
+  const token = req.cookies.accessToken; // Extract refreshToken from cookies
   if (!token) {
     return res.status(400).json({ message: "No token provided!" });
   }
@@ -163,7 +197,12 @@ const logoutUser = async (req, res) => {
       // blacklist teh token
       blacklistToken(token, expiresIn);
 
-      res.status(200).json({ message: "Logout successful" });
+      // Clear cookies
+      res
+        .clearCookie("accessToken")
+        .clearCookie("refreshToken")
+        .status(200)
+        .json({ message: "Logout successful" });
     }
     // Handle Google OAuth session logout
     if (req.user) {
