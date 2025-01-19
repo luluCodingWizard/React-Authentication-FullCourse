@@ -15,6 +15,7 @@ import EmailVerification from "./pages/EmailVerification.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import LogoutWarning from "./components/LogoutWarning.jsx";
+import OAuthCallback from "./pages/OAuthCallback.jsx";
 function App() {
   const [showLogoutWarning, setShowLogoutWarning] = useState(false);
 
@@ -39,6 +40,7 @@ function App() {
           <Route path="/sign-up" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/google/callback" component={OAuthCallback} />
           <Route
             path="/profile"
             element={

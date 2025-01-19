@@ -21,7 +21,7 @@ const ProfilePage = ({ onLogoutWarning }) => {
           {
             method: "GET",
           },
-          OnLogoutWarning
+          onLogoutWarning
         );
 
         // Check if the response is successful
@@ -40,7 +40,7 @@ const ProfilePage = ({ onLogoutWarning }) => {
       }
     };
     fetchUserDetails();
-  }, [OnLogoutWarning]);
+  }, [onLogoutWarning]);
 
   // Handle form input changes
   const handleChange = (e) => {

@@ -9,7 +9,8 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import verifyToken from "./middlewares/authMiddleware.js";
 import { checkRole } from "./middlewares/checkRole.js";
-import "./config/passport";
+import configurePassport from "./config/passport.js"; // Using ES module import
+import User from "./models/User.js";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,6 +27,8 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+
+configurePassport(User);
 // connect to mongoDB
 mongoose
   .connect("mongodb://127.0.0.1:27017/userInfo", {

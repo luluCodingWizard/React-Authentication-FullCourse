@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom"; // For redirecting the user
 import { AuthContext } from "../context/AuthContext";
-
+import OAuthButton from "../components/OAuthButton";
 const Login = () => {
   const { setToken } = useContext(AuthContext);
   const [formData, setFormData] = useState({
@@ -110,6 +110,10 @@ const Login = () => {
             {loading ? "...." : "Sign in"}
           </button>
         </form>
+        <div className="space-y-4">
+          <OAuthButton provider="google" />
+          <OAuthButton provider="github" />
+        </div>
       </div>
     </div>
   );
